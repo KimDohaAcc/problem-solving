@@ -62,11 +62,6 @@ public class Main {
 	}
 
 	static void union(int x, int y) {
-		if (x < y) {
-			parents[findset(y)] = findset(x);
-
-		} else {
-			parents[findset(x)] = findset(y);
-		}
+		parents[findset(y)] = findset(x);
 	}
 }
