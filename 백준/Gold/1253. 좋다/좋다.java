@@ -36,8 +36,6 @@ public class Main {
             cnt += checkZero;
         }
 
-        list.sort((o1, o2) -> (int) (o1 - o2));
-
         for (int i = 0; i < list.size(); i++) {
             if (plus.contains(list.get(i))) {
                 cnt++;
