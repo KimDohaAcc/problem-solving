@@ -1,55 +1,57 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.StringTokenizer;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int N = Integer.parseInt(br.readLine());
-        StringTokenizer st = new StringTokenizer(br.readLine());
-        List<Long> list = new ArrayList<>();
-        int checkZero = 0;
+	/*
+	투 포인터로 간단하게 해결을 할 수 있다
+	 */
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		int N = Integer.parseInt(br.readLine());
+		StringTokenizer st = new StringTokenizer(br.readLine());
+		int[] arr = new int[N];
 
-        for (int i = 0; i < N; i++) {
-            Long num = Long.parseLong(st.nextToken());
-            if (num == 0L) {
-                checkZero++;
-                continue;
-            }
+		for (int i = 0; i < N; i++) {
+			arr[i] = Integer.parseInt(st.nextToken());
+		}
 
-            list.add(num);
-        }
+//		System.out.println(Arrays.toString(arr));
+		Arrays.sort(arr);
 
+		int cnt = 0;
+		for (int i = 0; i < N; i++) {
+			// 포인터를 2개 주기
+			int left = 0;
+			int right = N - 1;
 
-        Set<Long> plus = new HashSet<>();
-        for (int i = 0; i < list.size(); i++) {
-            for (int j = i + 1; j < list.size(); j++) {
-                Long plusNum = list.get(i) + list.get(j);
-                plus.add(plusNum);
-            }
-        }
+			int num = arr[i];
 
-        int cnt = 0;
-        if ((checkZero > 0 && plus.contains(0L)) || checkZero >= 3) {
-            cnt += checkZero;
-        }
-
-        for (int i = 0; i < list.size(); i++) {
-            if (plus.contains(list.get(i))) {
-                cnt++;
-            } else if (checkZero > 0) {
-                Long num = list.get(i);
-                list.remove(i);
-                if (list.contains(num)) {
-                    cnt++;
-                }
-                list.add(i, num);
-            }
-        }
-
-
-        System.out.println(cnt);
-    }
+			// 두 포인터가 만날 때까지
+			while (left < right) {
+				int sum = arr[left] + arr[right];
+				if (sum == num) {
+					// 포인터가 나를 찍었다면
+					if (left == i) {
+						// 왼쪽 넘기기
+						left++;
+					} else if (right == i) {
+						// 오른쪽 넘기기
+						right--;
+					} else {
+						cnt++;
+						break;
+					}
+				} else if (sum < num) {
+					left++;
+				} else {
+					right--;
+				}
+			}
+		}
+		System.out.println(cnt);
+	}
 }
