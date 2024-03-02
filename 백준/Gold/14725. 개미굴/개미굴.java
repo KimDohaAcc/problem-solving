@@ -2,88 +2,43 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.function.Function;
 
 public class Main {
+    static class Trie {
+        Map<String, Trie> child;
 
-    static class Fruit implements Comparable<Fruit> {
-
-        String name;
-        List<Fruit> child;
-
-        public Fruit(String name) {
-            this.name = name;
-            child = new ArrayList<>();
+        Trie() {
+            this.child = new TreeMap<>();
         }
 
-        public void addChild(Fruit child) {
-            this.child.add(child);
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
-
-        @Override
-        public int compareTo(Fruit o) {
-            return this.name.compareTo(o.name);
+        void print(int depth) {
+            for (Map.Entry<String, Trie> entry : child.entrySet()) {
+                System.out.println("--".repeat(depth) + entry.getKey());
+                entry.getValue().print(depth + 1);
+            }
         }
     }
 
-    static List<List<Fruit>> list;
     static int N;
+    static Function<String, Integer> parsing = Integer::parseInt;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        N = Integer.parseInt(br.readLine());
-        list = new ArrayList<>();
+        N = parsing.apply(br.readLine());
         StringTokenizer st;
 
+        Trie root = new Trie();
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
-            int K = Integer.parseInt(st.nextToken());
+            int K = parsing.apply(st.nextToken());
 
-            Fruit parent = null;
+            Trie node = root;
             for (int j = 0; j < K; j++) {
-                if (list.size() <= j) {
-                    list.add(new ArrayList<>());
-                }
-
-                String NAME = st.nextToken();
-                int IDX = j;
-                Fruit PARENT = parent;
-
-                parent = isFruitEmpty(IDX, NAME, PARENT).orElseGet(() -> {
-                    Fruit newFruit = new Fruit(NAME);
-                    list.get(IDX).add(newFruit);
-
-                    if (IDX > 0) {
-                        PARENT.addChild(newFruit);
-                    }
-                    return newFruit;
-                });
+                node = node.child.computeIfAbsent(st.nextToken(), s -> new Trie());
             }
         }
 
-        Collections.sort(list.get(0));
-        for (int i = 0; i < list.get(0).size(); i++) {
-            printDfs(0, list.get(0).get(i));
-        }
-    }
-
-    static Optional<Fruit> isFruitEmpty(int j, String name, Fruit parent) {
-        return list.get(j).stream().filter(fruit -> fruit.name.equals(name) && (parent == null || parent.child.contains(fruit))).findAny();
-    }
-
-    static void printDfs(int depth, Fruit fruit) {
-        for (int i = 0; i < depth; i++) {
-            System.out.print("--");
-        }
-        System.out.println(fruit.name);
-
-        Collections.sort(fruit.child);
-        for (int i = 0; i < fruit.child.size(); i++) {
-            printDfs(depth + 1, fruit.child.get(i));
-        }
+        root.print(0);
     }
 }
