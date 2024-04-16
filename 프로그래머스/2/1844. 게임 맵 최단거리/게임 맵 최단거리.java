@@ -29,7 +29,7 @@ class Solution {
                 }
                 
                 if(ny == garo - 1 && nx == sero - 1) {
-                    min = Math.min(min, idx[2] + 1);   
+                    min = idx[2] + 1;   
                 }
                 
                 visited[ny][nx] = true;
