@@ -13,22 +13,23 @@ class Solution {
         
         int cnt = 0;
         
-        if(h == m && m == s) {
+        if(h == s || m == s) {
             cnt ++;
         }
         
         for(int i = startTime + 1; i <= endTime; i ++) {
-            double nowH = (i * angH) % 360;
-            double nowM = (i * angM) % 360;
-            double nowS = (i * angS) % 360 == 0 ? i * angS : (i * angS) % 360;
-            
-            if(s < h && nowH <= nowS) {
-                cnt ++;
-            }
+            double nowH = (i * angH) % 360 == 0 ? 360 : (i * angH) % 360;
+            double nowM = (i * angM) % 360 == 0 ? 360 : (i * angM) % 360;
+            double nowS = (i * angS) % 360 == 0 ? 360 : (i * angS) % 360;
+        
+                if(s < h && nowH <= nowS) {
+                    cnt ++;
+                }
 
-            if(s < m && nowM <= nowS && nowM != nowH) {
-                cnt ++;
-            }
+                if(s < m && nowM <= nowS && nowH != nowM) {
+                    cnt ++;
+                }
+    
                 
             h = nowH % 360;
             m = nowM % 360;
