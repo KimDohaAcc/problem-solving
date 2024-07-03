@@ -28,23 +28,16 @@ class Solution {
             }
         });
             
-        List<Integer> roomList = new ArrayList<>();
-        roomList.add(0);
+        Queue<Integer> rooms = new PriorityQueue<>(Comparator.naturalOrder());
         
         for(int[] booking : bookingList) {
-            Collections.sort(roomList);
-            
-            for(int i = 0; i < roomList.size(); i ++) {
-                if(roomList.get(i) <= booking[0]) {
-                    roomList.set(i, booking[1] + 10);
-                    break;
-                } else if(i == roomList.size() - 1) {
-                    roomList.add(booking[1] + 10);
-                    break;
-                }
+            if(!rooms.isEmpty() && rooms.peek() <= booking[0]) {
+                rooms.poll();
             }
+
+            rooms.offer(booking[1] + 10);
         }
         
-        return roomList.size();
+        return rooms.size();
     }
 }
