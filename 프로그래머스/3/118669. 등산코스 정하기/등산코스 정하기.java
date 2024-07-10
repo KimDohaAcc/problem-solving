@@ -1,92 +1,106 @@
 import java.util.*;
 
-class Solution {
-    // 내려오든지 말든지 그냥 산봉우리까지 최단 거리 구하면 댄다
-    // 다익스트라 쓰는데 거리 말고 intensity 넣으면 될듯?
-    static int intensity = 10000001;
-    static int summit = 0;
+// https://tech.kakao.com/2022/07/13/2022-coding-test-summer-internship/
+public class Solution {
+    private static List<List<Node>> graph;
 
-    public int[] solution(int n, int[][] paths, int[] gates, int[] summits) {
-        List<int[]>[] nodeList = new ArrayList [n + 1];
+    private static class Node {
+        int e, w; // 노드, 가중치
 
-        for(int i = 0; i < nodeList.length; i ++) {
-            nodeList[i] = new ArrayList<>();
+        Node(int e, int w) {
+            this.e = e;
+            this.w = w;
         }
-
-        for(int i = 0; i < paths.length; i ++) {
-            int node = paths[i][0];
-            int other = paths[i][1];
-            int dis = paths[i][2];
-
-            nodeList[node].add(new int [] {other, dis});
-            nodeList[other].add(new int [] {node, dis});
-        }
-
-        // 게이트 찾기 좋게 list로 바꿈
-        List<Integer> gateList = new ArrayList<>();
-        for(int i = 0; i < gates.length; i ++) {
-            gateList.add(gates[i]);
-        }
-
-        // 번호가 낮은 산봉우리부터 탐색
-        Arrays.sort(summits);
-        
-        // 산봉우리 찾기 좋게 list로 바꿈
-        List<Integer> summitList = new ArrayList<>();
-        for(int i = 0; i < summits.length; i ++) {
-            summitList.add(summits[i]);
-        }
-
-        // 다익스트라
-        dijkstra(nodeList, gateList, summitList, n);
-
-        // 산봉우리 번호랑 intensity 넣기
-        int[] answer = {summit, intensity};
-        return answer;
     }
 
-    static void dijkstra(List<int[]>[] nodeList, List<Integer> gateList, List<Integer> summitList, int n) {
-        Queue<int[]> pq = new PriorityQueue<>(new Comparator<int[]>() {
-            @Override
-            public int compare(int[] o1, int[] o2) {
-                return o1[2] == o2[2] ? o1[1] - o2[1] : o1[2] - o2[2];
-            }
-        });
-
-        int[] dis = new int [n + 1];
-        Arrays.fill(dis, Integer.MAX_VALUE);
-
-        for (Integer summit : summitList) {
-            pq.offer(new int[] {summit, 0, summit});
-            dis[summit] = 0;
+    public static int[] solution(int n, int[][] paths, int[] gates, int[] summits) {
+        graph = new ArrayList<>();
+        for (int i = 0; i < n + 1; i++) {
+            graph.add(new ArrayList<>());
         }
 
-        while(!pq.isEmpty()) {
-            int[] arr = pq.poll();
-            int now = arr[0];
-            int s = arr[2];
+        for (int[] path : paths) {
+            int s = path[0];
+            int e = path[1];
+            int w = path[2];
 
-            for(int i = 0; i < nodeList[now].size(); i ++) {
-                int[] node = nodeList[now].get(i);
-                int next = node[0];
-                int nextD = node[1];
-                int nowInt = Math.max(dis[now], nextD);
-
-                if(summitList.contains(next) || dis[next] < nowInt || nowInt >= intensity) {
-                    continue;
-                }
-
-                if(dis[next] > nowInt) {
-                    dis[next] = nowInt;
-                    pq.offer(new int[] {next, nextD, s});
-                }
-
-                if(gateList.contains(next) && dis[next] < intensity) {
-                    intensity = dis[next];
-                    summit = s;
-                }
-
+            // 출입구일 경우 다른 곳으로만 갈 수 있는 단방향
+            // 산봉우리일 경우 특정 한 곳에서 산봉우리로 가는 단방향
+            if (isGate(s, gates) || isSummit(e, summits)) {
+                graph.get(s).add(new Node(e, w));
+            } else if (isGate(e, gates) || isSummit(s, summits)) {
+                graph.get(e).add(new Node(s, w));
+            } else {
+                // 일반 등산로일 경우 양방향
+                graph.get(s).add(new Node(e, w));
+                graph.get(e).add(new Node(s, w));
             }
         }
+
+        // 정상까지 갔을 때 최소이면 돌아올 때도 같은 경로를 선택하면 되므로
+        // 정상까지 가는 경우만 고려
+        return dijkstra(n, gates, summits);
+    }
+
+    private static int[] dijkstra(int n, int[] gates, int[] summits) {
+        Queue<Node> qu = new LinkedList<>();
+        int[] intensity = new int[n + 1];
+
+        Arrays.fill(intensity, Integer.MAX_VALUE);
+
+        // 출입구 전부를 큐에 넣음
+        for (int gate : gates) {
+            qu.add(new Node(gate, 0));
+            intensity[gate] = 0; // 시작 지점은 0
+        }
+
+        while (!qu.isEmpty()) {
+            Node cn = qu.poll();
+
+            // 현재의 가중치가 저장된 가중치보다 커서 최소 갱신이 되지 않을 때 스킵
+            if(cn.w > intensity[cn.e]) continue;
+
+            for (int i = 0; i < graph.get(cn.e).size(); i++) {
+                Node nn = graph.get(cn.e).get(i);
+
+                // 최소 갱신
+                int dis = Math.max(intensity[cn.e], nn.w);
+                if (intensity[nn.e] > dis) {
+                    intensity[nn.e] = dis;
+                    qu.add(new Node(nn.e, dis));
+                }
+            }
+        }
+
+        int mn = Integer.MAX_VALUE; // 산봉우리 번호
+        int mw = Integer.MAX_VALUE; // 최솟값
+
+        // 정렬하지 않으면 12, 14, 15, 16, 17, 25번 문제 실패
+        Arrays.sort(summits);
+
+        for (int summit : summits) {
+            if (intensity[summit] < mw) {
+                mn = summit;
+                mw = intensity[summit];
+            }
+        }
+
+        return new int[]{mn, mw};
+    }
+
+    // num이 입구인지 확인
+    private static boolean isGate(int num, int[] gates) {
+        for (int gate : gates) {
+            if (num == gate) return true;
+        }
+        return false;
+    }
+
+    // num이 산봉우리인지 확인
+    private static boolean isSummit(int num, int[] submits) {
+        for (int submit : submits) {
+            if (num == submit) return true;
+        }
+        return false;
     }
 }
