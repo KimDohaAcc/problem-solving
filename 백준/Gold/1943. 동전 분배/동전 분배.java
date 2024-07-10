@@ -32,7 +32,7 @@ public class Main {
             answer = 0;
             money = 0;
             coins = new Coin[N];
-            dp = new boolean[100001]; // 최대 금액이 10만이다
+            dp = new boolean[50001]; // 최대 금액이 10만이다 절반만 보면 된다
             dp[0] = true;
 
             for (int i = 0; i < N; i++) {
@@ -47,6 +47,9 @@ public class Main {
 
                 // 동전 가치의 개수 배수를 다 true로 준다
                 for (int j = 1; j <= count; j++) {
+                    if (value * j > 50000) {
+                        break;
+                    }
                     dp[value * j] = true;
                 }
             }
