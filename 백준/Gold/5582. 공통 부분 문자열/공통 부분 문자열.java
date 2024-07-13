@@ -3,29 +3,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Main {
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String a = br.readLine();
-        String b= br.readLine();
-        int dp[][] = new int[a.length()+1][b.length()+1];
-        int max=0;
-        for (int i=1; i<=a.length(); i++){
-            for(int j=1; j<=b.length(); j++){
-                if (a.charAt(i-1)==b.charAt(j-1)){
-                    dp[i][j] = dp[i-1][j-1]+=1;
-                    max = Math.max(dp[i][j], max);
+        char[] a = br.readLine().toCharArray();
+        char[] b = br.readLine().toCharArray();
+        /*
+        dp 기반 LCS
+         */
+        int dp[] = new int[b.length + 1];
+        int max = 0;
+        for (int i = 1; i <= a.length; i++) {
+            int prev = 0; // 직전까지 비교한 결과를 저장
+            for (int j = 1; j <= b.length; j++) {
+                int temp = dp[j];
+                if (a[i - 1] == b[j - 1]) {
+                    dp[j] = prev + 1;
+                    max = Math.max(dp[j], max);
+                } else {
+                    dp[j] = 0;
                 }
+
+                prev = temp;
             }
-//            System.out.println();
         }
         System.out.println(max);
-//
-//        for (int i=0; i<=a.length(); i++){
-//            for(int j=0; j<=b.length(); j++){
-//                System.out.print(dp[i][j]);
-//            }
-//            System.out.println();
-//        }
     }
 }
